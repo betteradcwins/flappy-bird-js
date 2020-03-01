@@ -1,4 +1,4 @@
-function novoElemento(tagName, className) {
+function novoElemento(tagName, className = '') {
     const elem = document.createElement(tagName)
     elem.className = className
     return elem
@@ -32,7 +32,7 @@ function ParDeBarreiras(altura, abertura, x) {
     }
 
     this.getX = () => parseInt(this.elemento.style.left.split('px')[0])
-    this.setX = (x) =>  this.elemento.style.left = `${x}px`
+    this.setX = (x) => this.elemento.style.left = `${x}px`
     this.getLargura = () => this.elemento.clientWidth
 
     this.sortearAbertura()
@@ -46,7 +46,7 @@ function Barreiras(altura, largura, abertura, espaco, notificarPonto) {
         new ParDeBarreiras(altura, abertura, largura + espaco * 2),
         new ParDeBarreiras(altura, abertura, largura + espaco * 3)
     ]
-    
+
     const deslocamento = 3
 
     this.animar = () => {
@@ -67,23 +67,23 @@ function Barreiras(altura, largura, abertura, espaco, notificarPonto) {
 
 function Passaro(alturaJogo) {
     let voando = false
-    
+
     this.elemento = novoElemento('img', 'passaro')
     this.elemento.src = 'assets/passaro.png'
-    
+
     this.getY = () => parseInt(this.elemento.style.bottom.split('px')[0])
     this.setY = (y) => this.elemento.style.bottom = `${y}px`
-    
+
     window.onkeypress = () => {
         voando = true
-        
+
         const alturaMaxima = alturaJogo - this.elemento.clientHeight
         const novoY = this.getY() + 60
-        
+
         if (novoY >= alturaMaxima) this.setY(alturaMaxima)
         else {
             this.setY(novoY)
-            this.elemento.style.transform = "rotate(-20deg)"
+            this.elemento.style.transform = "rotate(-30deg)"
         }
         setTimeout(() => {
             voando = false
@@ -95,7 +95,7 @@ function Passaro(alturaJogo) {
             const novoY = this.getY() - queda
             if (novoY <= 0) this.setY(0)
             else {
-                this.elemento.style.transform = "rotate(20deg)"
+                this.elemento.style.transform = "rotate(25deg)"
                 this.setY(novoY)
             }
         }
@@ -135,15 +135,25 @@ function colidiu(passaro, barreiras) {
     return colidiu
 }
 
+function MenuRestart() {
+    const button = novoElemento('button', 'restart outline')
+
+    button.innerHTML = 'Restart'
+    button.onclick = () => location.reload()
+
+    this.elemento = novoElemento('div', 'restart')
+    this.elemento.appendChild(button)
+}
+
 function FlappyBird() {
     let pontos = 0
-    
+
     const areaDoJogo = document.querySelector('[wm-flappy]')
     const altura = areaDoJogo.clientHeight
     const largura = areaDoJogo.clientWidth
 
     const progresso = new Progresso()
-    const barreiras = new Barreiras(altura, largura, 200, 400, 
+    const barreiras = new Barreiras(altura, largura, 200, 400,
         () => progresso.atualizarPontos(++pontos))
     const passaro = new Passaro(altura)
 
@@ -155,9 +165,12 @@ function FlappyBird() {
         const temporizador = setInterval(() => {
             barreiras.animar()
             passaro.animar(5)
-            
+
             if (colidiu(passaro, barreiras)) {
+                window.onkeypress = null
                 clearInterval(temporizador)
+                const div = new MenuRestart()
+                areaDoJogo.appendChild(div.elemento)
             }
         }, 20)
     }
